@@ -33,9 +33,18 @@ export default function Home() {
 
   useEffect(() => {
     if (mounted && typeof window !== 'undefined') {
-      const script = document.createElement('script')
-      script.innerHTML = `_aads && _aads.init({container: 'a-ads-container'})`
-      document.body.appendChild(script)
+      const initAds = () => {
+        if (typeof (window as any)._aads !== 'undefined') {
+          try {
+            (window as any)._aads.init({container: 'a-ads-container'})
+          } catch (e) {
+            console.error('A-Ads init failed:', e)
+          }
+        } else {
+          setTimeout(initAds, 100)
+        }
+      }
+      initAds()
     }
   }, [mounted])
 
