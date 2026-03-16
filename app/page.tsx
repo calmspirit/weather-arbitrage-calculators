@@ -1,8 +1,12 @@
 'use client'
 import { useState, useEffect } from 'react'
-import { TrendingUp, TrendingDown, Cloud, Droplets, ThermometerSun, Calculator, Download, Github, Sparkles, BarChart3, Clock, Target } from 'lucide-react'
+import { TrendingUp, TrendingDown, Cloud, Droplets, ThermometerSun, Calculator, Download, Github, Sparkles, BarChart3, Clock, Target, Globe } from 'lucide-react'
+import { translations, cities } from './i18n'
+
+type Lang = 'en' | 'ja' | 'fr' | 'es' | 'zh-CN' | 'zh-TW'
 
 export default function Home() {
+  const [lang, setLang] = useState<Lang>('en')
   const [yesPrice, setYesPrice] = useState('')
   const [noPrice, setNoPrice] = useState('')
   const [forecast, setForecast] = useState('')
@@ -12,25 +16,45 @@ export default function Home() {
   const [loading, setLoading] = useState(false)
   const [calculating, setCalculating] = useState(false)
   const [mounted, setMounted] = useState(false)
+  const [selectedCity, setSelectedCity] = useState('Beijing')
+  const [searchTerm, setSearchTerm] = useState('')
+
+  const t = translations[lang]
 
   useEffect(() => {
     setMounted(true)
     const saved = localStorage.getItem('calcHistory')
+    const savedLang = localStorage.getItem('lang') as Lang
+    const savedCity = localStorage.getItem('selectedCity')
     if (saved) setHistory(JSON.parse(saved))
+    if (savedLang) setLang(savedLang)
+    if (savedCity) setSelectedCity(savedCity)
   }, [])
 
-  const fetchWeather = async (city: string = 'Beijing') => {
+  const changeLang = (newLang: Lang) => {
+    setLang(newLang)
+    localStorage.setItem('lang', newLang)
+  }
+
+  const changeCity = (city: string) => {
+    setSelectedCity(city)
+    localStorage.setItem('selectedCity', city)
+    setSearchTerm('')
+  }
+
+  const fetchWeather = async () => {
     setLoading(true)
     try {
-      const coords: any = { Beijing: [39.9, 116.4], Shanghai: [31.2, 121.5], Shenzhen: [22.5, 114.1] }
-      const [lat, lon] = coords[city] || coords.Beijing
-      const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,precipitation,weather_code&daily=precipitation_probability_max&timezone=Asia/Shanghai`)
+      const city = cities.find(c => c.name === selectedCity)
+      if (!city) return
+      const [lat, lon] = city.coords
+      const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,precipitation,weather_code&daily=precipitation_probability_max&timezone=auto`)
       const data = await res.json()
       setWeather({
         temp: data.current.temperature_2m,
         precip: data.current.precipitation,
         prob: data.daily.precipitation_probability_max[0],
-        city
+        city: selectedCity
       })
       setForecast(data.daily.precipitation_probability_max[0].toString())
     } catch (e) {
@@ -60,8 +84,8 @@ export default function Home() {
         edge: (edge * 100).toFixed(2),
         ev: (expectedValue * 100).toFixed(2),
         roi: roi.toFixed(2),
-        recommend: edge > 0.1 ? 'YES' : edge < -0.1 ? 'NO' : '无套利',
-        time: new Date().toLocaleString('zh-CN')
+        recommend: edge > 0.1 ? 'YES' : edge < -0.1 ? 'NO' : t.noArbitrage,
+        time: new Date().toLocaleString()
       }
 
       setResult(newResult)
@@ -74,7 +98,7 @@ export default function Home() {
   }
 
   const exportCSV = () => {
-    const csv = ['时间,YES价格,NO价格,预报概率,优势,期望值,ROI,建议', 
+    const csv = [`${t.time},YES,NO,${t.forecast},${t.edge},${t.ev},ROI,${t.recommend}`, 
       ...history.map(h => `${h.time},${h.yesPrice},${h.noPrice},${h.forecast},${h.edge},${h.ev},${h.roi},${h.recommend}`)
     ].join('\n')
     const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' })
@@ -84,340 +108,211 @@ export default function Home() {
     link.click()
   }
 
+  const filteredCities = cities.filter(c => 
+    c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    Object.values(c.label).some(l => l.toLowerCase().includes(searchTerm.toLowerCase()))
+  )
+
+  if (!mounted) return null
+
   return (
-    <main className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-950 relative overflow-hidden">
-      {/* Animated background elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
-      </div>
-
-      <div className={`relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 transition-all duration-1000 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-        
-        {/* Hero Section */}
-        <div className="text-center mb-12 sm:mb-16">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-blue-500 via-cyan-500 to-blue-600 rounded-3xl mb-6 shadow-2xl shadow-blue-500/50 relative group">
-            <div className="absolute inset-0 bg-gradient-to-br from-blue-400 to-cyan-400 rounded-3xl blur-xl opacity-50 group-hover:opacity-75 transition-opacity"></div>
-            <Cloud className="w-10 h-10 text-white relative z-10" strokeWidth={2.5} />
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+      <div className="max-w-6xl mx-auto p-6">
+        <div className="flex justify-between items-center mb-8">
+          <div>
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent flex items-center gap-3">
+              <Sparkles className="w-8 h-8 text-blue-600" />
+              {t.title}
+            </h1>
+            <p className="text-gray-600 mt-2">{t.subtitle}</p>
           </div>
-          <h1 className="text-4xl sm:text-6xl font-bold bg-gradient-to-r from-white via-blue-100 to-cyan-100 bg-clip-text text-transparent mb-4 tracking-tight">
-            天气套利计算器
-          </h1>
-          <p className="text-lg sm:text-xl text-blue-200/80 max-w-2xl mx-auto font-light">
-            基于气象数据的预测市场套利分析工具
-          </p>
-          <div className="flex items-center justify-center gap-6 mt-6 text-sm text-blue-300/60">
-            <div className="flex items-center gap-2">
-              <Sparkles className="w-4 h-4" />
-              <span>实时数据</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Target className="w-4 h-4" />
-              <span>精准计算</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <BarChart3 className="w-4 h-4" />
-              <span>历史追踪</span>
-            </div>
+          <div className="flex gap-3">
+            <select value={lang} onChange={(e) => changeLang(e.target.value as Lang)} className="px-4 py-2 border rounded-lg bg-white shadow-sm">
+              <option value="en">English</option>
+              <option value="ja">日本語</option>
+              <option value="fr">Français</option>
+              <option value="es">Español</option>
+              <option value="zh-CN">简体中文</option>
+              <option value="zh-TW">繁體中文</option>
+            </select>
+            <a href="https://github.com/calmspirit/weather-arbitrage-calculators" target="_blank" className="px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 flex items-center gap-2">
+              <Github className="w-4 h-4" />
+              {t.github}
+            </a>
           </div>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-6 mb-6">
-          
-          {/* Weather Widget - Compact */}
-          <div className="lg:col-span-1">
-            <div className="group bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 p-6 hover:border-cyan-400/50 transition-all duration-500 h-full">
-              <div className="flex items-center justify-between mb-5">
-                <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                  <Cloud className="w-5 h-5 text-cyan-400" />
-                  实时天气
-                </h2>
-                <select 
-                  onChange={(e) => fetchWeather(e.target.value)} 
-                  className="px-3 py-1.5 bg-white/10 text-white rounded-xl text-sm border border-white/20 focus:ring-2 focus:ring-cyan-400 focus:border-transparent outline-none transition-all hover:bg-white/15"
-                >
-                  <option value="Beijing">北京</option>
-                  <option value="Shanghai">上海</option>
-                  <option value="Shenzhen">深圳</option>
-                </select>
-              </div>
-              
-              {!weather && !loading && (
-                <button 
-                  onClick={() => fetchWeather()} 
-                  className="w-full py-3 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-xl font-medium hover:from-cyan-600 hover:to-blue-600 transition-all duration-300 shadow-lg shadow-cyan-500/30 hover:shadow-xl hover:shadow-cyan-500/40 hover:scale-[1.02] active:scale-[0.98]"
-                >
-                  获取天气数据
-                </button>
-              )}
-              
-              {loading && (
-                <div className="flex items-center justify-center py-8">
-                  <div className="w-8 h-8 border-4 border-cyan-400/30 border-t-cyan-400 rounded-full animate-spin"></div>
-                </div>
-              )}
-              
-              {weather && (
-                <div className="space-y-3">
-                  <div className="bg-gradient-to-br from-white/10 to-white/5 rounded-2xl p-4 border border-white/10 hover:border-white/20 transition-all">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2 text-blue-200 text-sm">
-                        <ThermometerSun className="w-4 h-4" />
-                        <span>温度</span>
-                      </div>
-                      <div className="text-2xl font-bold text-white">{weather.temp}°C</div>
-                    </div>
-                  </div>
-                  <div className="bg-gradient-to-br from-white/10 to-white/5 rounded-2xl p-4 border border-white/10 hover:border-white/20 transition-all">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2 text-blue-200 text-sm">
-                        <Droplets className="w-4 h-4" />
-                        <span>降水</span>
-                      </div>
-                      <div className="text-2xl font-bold text-white">{weather.precip}mm</div>
-                    </div>
-                  </div>
-                  <div className="bg-gradient-to-br from-cyan-500/20 to-blue-500/20 rounded-2xl p-4 border border-cyan-400/30 hover:border-cyan-400/50 transition-all">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2 text-cyan-200 text-sm font-medium">
-                        <Cloud className="w-4 h-4" />
-                        <span>降雨概率</span>
-                      </div>
-                      <div className="text-2xl font-bold text-white">{weather.prob}%</div>
-                    </div>
-                  </div>
-                </div>
-              )}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+          <div className="bg-white p-6 rounded-xl shadow-lg border border-blue-100">
+            <div className="flex items-center gap-3 mb-2">
+              <Clock className="w-6 h-6 text-blue-600" />
+              <h3 className="font-semibold text-gray-800">{t.realtime}</h3>
             </div>
+            <p className="text-gray-600 text-sm">{t.weather}</p>
           </div>
-
-          {/* Calculator Card - Main */}
-          <div className="lg:col-span-2">
-            <div className="group bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 p-8 hover:border-blue-400/50 transition-all duration-500">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="p-2 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl">
-                  <Calculator className="w-5 h-5 text-white" />
-                </div>
-                <h2 className="text-xl font-bold text-white">套利计算</h2>
-              </div>
-
-              <div className="grid sm:grid-cols-3 gap-4 mb-6">
-                <div className="space-y-2">
-                  <label className="flex items-center gap-2 text-sm font-medium text-blue-100">
-                    <TrendingUp className="w-4 h-4 text-green-400" />
-                    YES 价格
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="number"
-                      value={yesPrice}
-                      onChange={(e) => setYesPrice(e.target.value)}
-                      className="w-full px-4 py-3 bg-white/95 border-2 border-transparent rounded-xl focus:ring-2 focus:ring-green-400 focus:border-green-400 text-gray-900 text-lg font-semibold transition-all outline-none hover:bg-white"
-                      placeholder="65"
-                    />
-                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 font-medium">%</span>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="flex items-center gap-2 text-sm font-medium text-blue-100">
-                    <TrendingDown className="w-4 h-4 text-red-400" />
-                    NO 价格
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="number"
-                      value={noPrice}
-                      onChange={(e) => setNoPrice(e.target.value)}
-                      className="w-full px-4 py-3 bg-white/95 border-2 border-transparent rounded-xl focus:ring-2 focus:ring-red-400 focus:border-red-400 text-gray-900 text-lg font-semibold transition-all outline-none hover:bg-white"
-                      placeholder="35"
-                    />
-                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 font-medium">%</span>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="flex items-center gap-2 text-sm font-medium text-blue-100">
-                    <Cloud className="w-4 h-4 text-cyan-400" />
-                    预报概率
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="number"
-                      value={forecast}
-                      onChange={(e) => setForecast(e.target.value)}
-                      className="w-full px-4 py-3 bg-white/95 border-2 border-transparent rounded-xl focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 text-gray-900 text-lg font-semibold transition-all outline-none hover:bg-white"
-                      placeholder="75"
-                    />
-                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 font-medium">%</span>
-                  </div>
-                </div>
-              </div>
-
-              <button
-                onClick={calculate}
-                disabled={calculating}
-                className="w-full bg-gradient-to-r from-blue-500 via-cyan-500 to-blue-500 bg-size-200 bg-pos-0 hover:bg-pos-100 text-white py-4 rounded-xl font-bold text-lg transition-all duration-500 shadow-xl shadow-blue-500/40 hover:shadow-2xl hover:shadow-cyan-500/50 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed relative overflow-hidden group"
-              >
-                <span className="relative z-10 flex items-center justify-center gap-2">
-                  {calculating ? (
-                    <>
-                      <div className="w-5 h-5 border-3 border-white/30 border-t-white rounded-full animate-spin"></div>
-                      计算中...
-                    </>
-                  ) : (
-                    <>
-                      <Target className="w-5 h-5" />
-                      计算套利机会
-                    </>
-                  )}
-                </span>
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000"></div>
-              </button>
-
-              {result && (
-                <div className="mt-6 p-6 bg-gradient-to-br from-white/15 to-white/5 backdrop-blur-md rounded-2xl border border-white/30 animate-fadeIn">
-                  <div className="grid grid-cols-3 gap-4 mb-5">
-                    <div className="bg-gradient-to-br from-blue-500/20 to-blue-600/10 rounded-xl p-4 border border-blue-400/30 hover:border-blue-400/50 transition-all hover:scale-105">
-                      <div className="text-xs text-blue-200 mb-1 font-medium">优势</div>
-                      <div className="text-2xl font-bold text-white">{result.edge}%</div>
-                    </div>
-                    <div className="bg-gradient-to-br from-cyan-500/20 to-cyan-600/10 rounded-xl p-4 border border-cyan-400/30 hover:border-cyan-400/50 transition-all hover:scale-105">
-                      <div className="text-xs text-cyan-200 mb-1 font-medium">期望值</div>
-                      <div className="text-2xl font-bold text-white">{result.ev}%</div>
-                    </div>
-                    <div className="bg-gradient-to-br from-purple-500/20 to-purple-600/10 rounded-xl p-4 border border-purple-400/30 hover:border-purple-400/50 transition-all hover:scale-105">
-                      <div className="text-xs text-purple-200 mb-1 font-medium">ROI</div>
-                      <div className="text-2xl font-bold text-white">{result.roi}%</div>
-                    </div>
-                  </div>
-                  <div className="pt-5 border-t border-white/20">
-                    <div className="text-center">
-                      <div className="text-sm text-blue-200 mb-3 font-medium">建议操作</div>
-                      <div className={`inline-flex items-center gap-2 px-8 py-3 rounded-full font-bold text-xl transition-all duration-300 ${
-                        result.recommend === 'YES' ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-xl shadow-green-500/50 animate-pulse' : 
-                        result.recommend === 'NO' ? 'bg-gradient-to-r from-red-500 to-rose-500 text-white shadow-xl shadow-red-500/50 animate-pulse' : 
-                        'bg-gradient-to-r from-gray-500 to-slate-500 text-white shadow-lg'
-                      }`}>
-                        {result.recommend === 'YES' && <TrendingUp className="w-6 h-6" />}
-                        {result.recommend === 'NO' && <TrendingDown className="w-6 h-6" />}
-                        {result.recommend}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
+          <div className="bg-white p-6 rounded-xl shadow-lg border border-purple-100">
+            <div className="flex items-center gap-3 mb-2">
+              <Target className="w-6 h-6 text-purple-600" />
+              <h3 className="font-semibold text-gray-800">{t.accurate}</h3>
             </div>
+            <p className="text-gray-600 text-sm">{t.calculator}</p>
+          </div>
+          <div className="bg-white p-6 rounded-xl shadow-lg border border-green-100">
+            <div className="flex items-center gap-3 mb-2">
+              <BarChart3 className="w-6 h-6 text-green-600" />
+              <h3 className="font-semibold text-gray-800">{t.tracking}</h3>
+            </div>
+            <p className="text-gray-600 text-sm">{t.history}</p>
           </div>
         </div>
 
-        {/* History Section */}
-        {history.length > 0 && (
-          <div className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 p-8">
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl">
-                  <BarChart3 className="w-5 h-5 text-white" />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
+            <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
+              <Cloud className="w-6 h-6 text-blue-600" />
+              {t.weather}
+            </h2>
+            <div className="mb-4 relative">
+              <input type="text" placeholder={cities.find(c => c.name === selectedCity)?.label[lang]} value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full px-4 py-2 border rounded-lg" />
+              {searchTerm && (
+                <div className="absolute z-10 w-full mt-1 bg-white border rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                  {filteredCities.map(city => (
+                    <div key={city.name} onClick={() => changeCity(city.name)} className="px-4 py-2 hover:bg-blue-50 cursor-pointer">
+                      {city.label[lang]}
+                    </div>
+                  ))}
                 </div>
-                <h2 className="text-xl font-bold text-white">计算历史</h2>
-              </div>
-              <button 
-                onClick={exportCSV} 
-                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white rounded-xl text-sm font-medium transition-all duration-300 hover:scale-105 active:scale-95 shadow-lg shadow-green-500/30"
-              >
-                <Download className="w-4 h-4" />
-                导出CSV
-              </button>
+              )}
             </div>
-            
-            <div className="grid gap-3">
-              {history.map((item, i) => (
-                <div key={i} className="group p-5 bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm rounded-2xl border border-white/20 hover:border-white/40 hover:bg-white/15 transition-all duration-300">
-                  <div className="flex justify-between items-center mb-3">
-                    <div className="flex items-center gap-2 text-xs text-blue-200">
-                      <Clock className="w-3 h-3" />
-                      {item.time}
-                    </div>
-                    <span className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold transition-all ${
-                      item.recommend === 'YES' ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-lg shadow-green-500/30' : 
-                      item.recommend === 'NO' ? 'bg-gradient-to-r from-red-500 to-rose-500 text-white shadow-lg shadow-red-500/30' : 
-                      'bg-gradient-to-r from-gray-500 to-slate-500 text-white'
-                    }`}>
-                      {item.recommend === 'YES' && <TrendingUp className="w-3 h-3" />}
-                      {item.recommend === 'NO' && <TrendingDown className="w-3 h-3" />}
-                      {item.recommend}
-                    </span>
+            <button onClick={fetchWeather} disabled={loading} className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 flex items-center justify-center gap-2">
+              <Cloud className="w-5 h-5" />
+              {loading ? t.calculating : t.getWeather}
+            </button>
+            {weather && (
+              <div className="mt-6 space-y-4">
+                <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <ThermometerSun className="w-5 h-5 text-orange-600" />
+                    <span className="font-semibold">{t.temp}</span>
                   </div>
-                  <div className="grid grid-cols-3 gap-3 text-sm text-white mb-2">
-                    <div className="flex items-center gap-1">
-                      <TrendingUp className="w-3 h-3 text-green-400" />
-                      YES: <span className="font-bold">{item.yesPrice}%</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <TrendingDown className="w-3 h-3 text-red-400" />
-                      NO: <span className="font-bold">{item.noPrice}%</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Cloud className="w-3 h-3 text-cyan-400" />
-                      预报: <span className="font-bold">{item.forecast}%</span>
-                    </div>
-                  </div>
-                  <div className="text-xs text-blue-200/80">
-                    Edge: <span className="font-semibold">{item.edge}%</span> | ROI: <span className="font-semibold">{item.roi}%</span>
-                  </div>
+                  <span className="text-2xl font-bold text-blue-600">{weather.temp}°C</span>
                 </div>
-              ))}
-            </div>
-
-            {/* ROI Chart */}
-            {history.length > 2 && (
-              <div className="mt-6 p-6 bg-gradient-to-br from-white/5 to-transparent rounded-2xl border border-white/10">
-                <h3 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
-                  <BarChart3 className="w-4 h-4 text-purple-400" />
-                  ROI 趋势图
-                </h3>
-                <div className="flex items-end justify-between h-40 gap-2">
-                  {history.slice(0, 10).reverse().map((item, i) => {
-                    const height = Math.min(Math.abs(parseFloat(item.roi)), 100)
-                    const isPositive = parseFloat(item.roi) > 0
-                    return (
-                      <div key={i} className="flex-1 flex flex-col items-center group/bar">
-                        <div 
-                          className={`w-full rounded-t-lg transition-all duration-500 hover:opacity-80 ${
-                            isPositive 
-                              ? 'bg-gradient-to-t from-green-500 to-emerald-400 shadow-lg shadow-green-500/30' 
-                              : 'bg-gradient-to-t from-red-500 to-rose-400 shadow-lg shadow-red-500/30'
-                          }`}
-                          style={{ height: `${height}%` }}
-                          title={`ROI: ${item.roi}%`}
-                        />
-                        <div className="text-xs text-blue-200/60 mt-2 group-hover/bar:text-blue-200 transition-colors">{i+1}</div>
-                      </div>
-                    )
-                  })}
+                <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <Droplets className="w-5 h-5 text-blue-600" />
+                    <span className="font-semibold">{t.precip}</span>
+                  </div>
+                  <span className="text-2xl font-bold text-blue-600">{weather.precip}mm</span>
+                </div>
+                <div className="flex items-center justify-between p-4 bg-purple-50 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <Cloud className="w-5 h-5 text-purple-600" />
+                    <span className="font-semibold">{t.rainProb}</span>
+                  </div>
+                  <span className="text-2xl font-bold text-purple-600">{weather.prob}%</span>
                 </div>
               </div>
             )}
           </div>
-        )}
 
-        {/* Footer */}
-        <footer className="mt-12 text-center pb-8">
-          <div className="inline-flex items-center gap-4 mb-4">
-            <a 
-              href="https://github.com/calmspirit/weather-arbitrage-calculators" 
-              target="_blank"
-              className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white rounded-xl transition-all duration-300 hover:scale-105 border border-white/20 hover:border-white/40"
-            >
-              <Github className="w-4 h-4" />
-              <span className="text-sm font-medium">GitHub</span>
-            </a>
+          <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
+            <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
+              <Calculator className="w-6 h-6 text-purple-600" />
+              {t.calculator}
+            </h2>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-2">{t.yesPrice} (%)</label>
+                <input type="number" value={yesPrice} onChange={(e) => setYesPrice(e.target.value)} className="w-full px-4 py-2 border rounded-lg" placeholder="65" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">{t.noPrice} (%)</label>
+                <input type="number" value={noPrice} onChange={(e) => setNoPrice(e.target.value)} className="w-full px-4 py-2 border rounded-lg" placeholder="35" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">{t.forecast} (%)</label>
+                <input type="number" value={forecast} onChange={(e) => setForecast(e.target.value)} className="w-full px-4 py-2 border rounded-lg" placeholder="70" />
+              </div>
+              <button onClick={calculate} disabled={calculating} className="w-full bg-purple-600 text-white py-3 rounded-lg hover:bg-purple-700 disabled:bg-gray-400 flex items-center justify-center gap-2">
+                <Calculator className="w-5 h-5" />
+                {calculating ? t.calculating : t.calculate}
+              </button>
+            </div>
+            {result && (
+              <div className="mt-6 p-6 bg-gradient-to-br from-purple-50 to-blue-50 rounded-lg border-2 border-purple-200">
+                <div className="grid grid-cols-2 gap-4 mb-4">
+                  <div>
+                    <div className="text-sm text-gray-600">{t.edge}</div>
+                    <div className="text-2xl font-bold text-purple-600">{result.edge}%</div>
+                  </div>
+                  <div>
+                    <div className="text-sm text-gray-600">{t.ev}</div>
+                    <div className="text-2xl font-bold text-blue-600">{result.ev}%</div>
+                  </div>
+                  <div>
+                    <div className="text-sm text-gray-600">{t.roi}</div>
+                    <div className="text-2xl font-bold text-green-600">{result.roi}%</div>
+                  </div>
+                  <div>
+                    <div className="text-sm text-gray-600">{t.recommend}</div>
+                    <div className="text-2xl font-bold flex items-center gap-2">
+                      {result.recommend === 'YES' ? <TrendingUp className="text-green-600" /> : result.recommend === 'NO' ? <TrendingDown className="text-red-600" /> : null}
+                      <span className={result.recommend === 'YES' ? 'text-green-600' : result.recommend === 'NO' ? 'text-red-600' : 'text-gray-600'}>{result.recommend}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
-          <div className="text-sm text-blue-200/60">
-            Built with Next.js, Tailwind CSS & Lucide Icons
+        </div>
+
+        {history.length > 0 && (
+          <div className="mt-8 bg-white rounded-xl shadow-lg p-6 border border-gray-100">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-2xl font-bold flex items-center gap-2">
+                <BarChart3 className="w-6 h-6 text-green-600" />
+                {t.history}
+              </h2>
+              <button onClick={exportCSV} className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2">
+                <Download className="w-4 h-4" />
+                {t.export}
+              </button>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b">
+                    <th className="text-left p-2">{t.time}</th>
+                    <th className="text-left p-2">YES</th>
+                    <th className="text-left p-2">NO</th>
+                    <th className="text-left p-2">{t.forecast}</th>
+                    <th className="text-left p-2">{t.edge}</th>
+                    <th className="text-left p-2">{t.roi}</th>
+                    <th className="text-left p-2">{t.suggestion}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {history.map((h, i) => (
+                    <tr key={i} className="border-b hover:bg-gray-50">
+                      <td className="p-2 text-sm">{h.time}</td>
+                      <td className="p-2">{h.yesPrice}%</td>
+                      <td className="p-2">{h.noPrice}%</td>
+                      <td className="p-2">{h.forecast}%</td>
+                      <td className="p-2 font-semibold">{h.edge}%</td>
+                      <td className="p-2 font-semibold">{h.roi}%</td>
+                      <td className="p-2">
+                        <span className={`px-2 py-1 rounded text-sm ${h.recommend === 'YES' ? 'bg-green-100 text-green-800' : h.recommend === 'NO' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800'}`}>
+                          {h.recommend}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
-        </footer>
+        )}
       </div>
-    </main>
+    </div>
   )
 }
