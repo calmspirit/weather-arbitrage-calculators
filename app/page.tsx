@@ -277,6 +277,16 @@ export default function Home() {
                 </div>
               </div>
             </div>
+            <div className="mt-4 p-3 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-lg border border-yellow-200">
+              <div className="text-xs text-gray-600 text-center mb-1">💡 Support this free tool</div>
+              <div className="text-sm text-center">
+                <a href="https://www.bsmkweb.cc/activity/referral-entry/CPA?ref=CPA_00M8R3UI0N" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 font-medium">
+                  Get reduced fees on Binance
+                </a>
+                <span className="text-gray-600"> with code: </span>
+                <code className="bg-white px-2 py-0.5 rounded text-xs font-mono">CPA_00M8R3UI0N</code>
+              </div>
+            </div>
           </div>
         </div>
 
