@@ -2,15 +2,22 @@ import './globals.css'
 import Script from 'next/script'
 
 export const metadata = {
-  title: 'OddsKit | Your Complete Odds Toolkit',
-  description: 'Professional odds conversion and betting calculators. Real-time Edge, EV, ROI calculations, Kelly Criterion, and odds conversion tools for prediction markets and sports betting',
-  keywords: 'odds converter, Kelly calculator, arbitrage calculator, betting odds, prediction market, EV calculator, ROI calculator, sports betting tools',
+  title: 'OddsKit | Professional Betting Calculators & Odds Converter',
+  description: 'Free professional betting tools: Odds Converter, Kelly Calculator, EV Calculator. Convert odds formats, calculate optimal bet sizing, and analyze expected value for sports betting and prediction markets.',
+  keywords: 'odds converter, Kelly calculator, EV calculator, betting calculator, arbitrage calculator, betting odds, prediction market, ROI calculator, sports betting tools, implied probability',
   openGraph: {
-    title: 'OddsKit - Your Complete Odds Toolkit',
-    description: 'Professional odds conversion and betting calculators for prediction markets',
+    title: 'OddsKit - Professional Betting Calculators & Odds Converter',
+    description: 'Free professional betting tools for odds conversion, Kelly Criterion, and EV analysis',
     type: 'website',
+    url: 'https://oddskit.vercel.app',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'OddsKit - Professional Betting Calculators',
+    description: 'Free tools for odds conversion, Kelly Criterion, and EV analysis',
   },
   viewport: 'width=device-width, initial-scale=1, maximum-scale=1',
+  robots: 'index, follow',
 }
 
 export default function RootLayout({
@@ -23,6 +30,19 @@ export default function RootLayout({
       <head>
         <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⛅</text></svg>" />
         <script dangerouslySetInnerHTML={{__html: `(function(){try{var t=localStorage.getItem('theme');if(t==='dark'||(t===null&&window.matchMedia('(prefers-color-scheme: dark)').matches)){document.documentElement.classList.add('dark')}}catch(e){}})();`}} />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{__html: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "WebApplication",
+          "name": "OddsKit",
+          "description": "Professional betting calculators and odds converter tools",
+          "url": "https://oddskit.vercel.app",
+          "applicationCategory": "FinanceApplication",
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+          }
+        })}} />
       </head>
       <body>
         <Script src="https://api.a-ads.com/ads.js" strategy="beforeInteractive" />
