@@ -64,13 +64,17 @@ export default function Home() {
   }
 
   const calculate = () => {
+    console.log('Calculate clicked', { yesPrice, noPrice, forecast })
     setCalculating(true)
     setTimeout(() => {
       const yes = parseFloat(yesPrice) / 100
       const no = parseFloat(noPrice) / 100
       const prob = parseFloat(forecast) / 100
       
-      if (!yes || !no || !prob) {
+      console.log('Parsed values:', { yes, no, prob })
+      
+      if (isNaN(yes) || isNaN(no) || isNaN(prob)) {
+        console.error('Invalid input values')
         setCalculating(false)
         return
       }
