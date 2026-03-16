@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react'
 import { Calculator, TrendingUp, TrendingDown, DollarSign, Percent, Github, Sun, Moon, Home } from 'lucide-react'
 import Link from 'next/link'
+import Sidebar from '@/components/Sidebar'
 
 export default function EVCalculator() {
   const [mounted, setMounted] = useState(false)
@@ -78,7 +79,8 @@ export default function EVCalculator() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="flex flex-col lg:flex-row gap-8">
+          <div className="flex-1 space-y-6">
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-100 dark:border-gray-700">
             <h2 className="text-2xl font-bold mb-6 flex items-center gap-2 text-gray-800 dark:text-gray-100">
               <Calculator className="w-6 h-6 text-purple-600 dark:text-purple-400" />
@@ -192,6 +194,9 @@ export default function EVCalculator() {
               </ul>
             </div>
           </div>
+          </div>
+          
+          <Sidebar />
         </div>
 
         <div className="mt-8 bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-100 dark:border-gray-700">

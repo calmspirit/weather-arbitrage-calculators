@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react'
 import { Calculator, ArrowRight, Sun, Moon, Github, TrendingUp } from 'lucide-react'
 import Link from 'next/link'
+import Sidebar from '@/components/Sidebar'
 
 type OddsFormat = 'decimal' | 'fractional' | 'american' | 'probability'
 
@@ -136,7 +137,8 @@ export default function OddsConverter() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="flex flex-col lg:flex-row gap-8">
+          <div className="flex-1 space-y-6">
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-100 dark:border-gray-700 transition-colors">
             <h2 className="text-2xl font-bold mb-6 text-gray-800 dark:text-gray-100">Input</h2>
             <div className="space-y-4">
@@ -229,6 +231,9 @@ export default function OddsConverter() {
               </div>
             )}
           </div>
+          </div>
+          
+          <Sidebar />
         </div>
 
         <div className="mt-8 bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-100 dark:border-gray-700">

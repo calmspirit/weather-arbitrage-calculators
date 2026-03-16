@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react'
 import { Calculator, TrendingUp, AlertTriangle, DollarSign, Percent, Github, Sun, Moon, Home, Info } from 'lucide-react'
 import Link from 'next/link'
+import Sidebar from '@/components/Sidebar'
 
 export default function KellyCalculator() {
   const [mounted, setMounted] = useState(false)
@@ -82,8 +83,9 @@ export default function KellyCalculator() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-100 dark:border-gray-700">
+        <div className="flex flex-col lg:flex-row gap-8">
+          <div className="flex-1 space-y-6">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-100 dark:border-gray-700">
             <h2 className="text-2xl font-bold mb-6 flex items-center gap-2 text-gray-800 dark:text-gray-100">
               <Calculator className="w-6 h-6 text-purple-600 dark:text-purple-400" />
               Calculator
@@ -218,59 +220,34 @@ export default function KellyCalculator() {
               </div>
             </div>
           </div>
+          
+          <Sidebar />
         </div>
 
-        <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-100 dark:border-gray-700">
-            <h3 className="text-xl font-bold mb-4 text-gray-800 dark:text-gray-100">Risk Management Tips</h3>
-            <ul className="space-y-3 text-gray-600 dark:text-gray-300">
-              <li className="flex items-start gap-2">
-                <span className="text-green-600 dark:text-green-400 mt-1">✓</span>
-                <span>Never bet more than Kelly suggests - it increases risk of ruin</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-green-600 dark:text-green-400 mt-1">✓</span>
-                <span>Use fractional Kelly (25-50%) to reduce volatility</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-green-600 dark:text-green-400 mt-1">✓</span>
-                <span>Be conservative with win probability estimates</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-green-600 dark:text-green-400 mt-1">✓</span>
-                <span>Recalculate after each bet as bankroll changes</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-red-600 dark:text-red-400 mt-1">✗</span>
-                <span>Don't bet if Kelly is negative (no edge)</span>
-              </li>
-            </ul>
-          </div>
-
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-100 dark:border-gray-700">
-            <h3 className="text-xl font-bold mb-4 text-gray-800 dark:text-gray-100">Related Tools</h3>
-            <div className="space-y-3">
-              <Link href="/ev-calculator" className="block p-4 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/30 dark:to-purple-900/30 rounded-lg hover:shadow-md transition-shadow">
-                <h4 className="font-semibold text-blue-600 dark:text-blue-400 mb-1">EV Calculator</h4>
-                <p className="text-sm text-gray-600 dark:text-gray-300">Calculate expected value before using Kelly</p>
-              </Link>
-              <Link href="/odds-converter" className="block p-4 bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/30 dark:to-blue-900/30 rounded-lg hover:shadow-md transition-shadow">
-                <h4 className="font-semibold text-green-600 dark:text-green-400 mb-1">Odds Converter</h4>
-                <p className="text-sm text-gray-600 dark:text-gray-300">Convert odds to decimal format</p>
-              </Link>
-            </div>
-          </div>
-        </div>
-
-        <div className="mt-8 bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/30 dark:to-orange-900/30 rounded-xl shadow-lg p-6 border border-yellow-200 dark:border-yellow-700">
-          <h3 className="text-xl font-bold mb-4 text-gray-800 dark:text-gray-100">Start Trading Crypto</h3>
-          <p className="text-gray-600 dark:text-gray-300 mb-4">
-            Apply Kelly Criterion to crypto trading. Get 20% fee discount on Binance.
-          </p>
-          <a href="https://www.binance.com/en/register?ref=YOUR_REF" target="_blank" className="inline-flex items-center gap-2 bg-yellow-500 hover:bg-yellow-600 text-white px-6 py-3 rounded-lg font-semibold transition-colors">
-            <DollarSign className="w-5 h-5" />
-            Sign Up on Binance
-          </a>
+        <div className="mt-8 bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-100 dark:border-gray-700">
+          <h3 className="text-xl font-bold mb-4 text-gray-800 dark:text-gray-100">Risk Management Tips</h3>
+          <ul className="space-y-3 text-gray-600 dark:text-gray-300">
+            <li className="flex items-start gap-2">
+              <span className="text-green-600 dark:text-green-400 mt-1">✓</span>
+              <span>Never bet more than Kelly suggests - it increases risk of ruin</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-green-600 dark:text-green-400 mt-1">✓</span>
+              <span>Use fractional Kelly (25-50%) to reduce volatility</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-green-600 dark:text-green-400 mt-1">✓</span>
+              <span>Be conservative with win probability estimates</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-green-600 dark:text-green-400 mt-1">✓</span>
+              <span>Recalculate after each bet as bankroll changes</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-red-600 dark:text-red-400 mt-1">✗</span>
+              <span>Don't bet if Kelly is negative (no edge)</span>
+            </li>
+          </ul>
         </div>
 
         <footer className="mt-12 text-center text-gray-600 dark:text-gray-400 text-sm">
@@ -281,6 +258,7 @@ export default function KellyCalculator() {
             <Link href="/odds-converter" className="hover:text-purple-600 dark:hover:text-purple-400">Odds Converter</Link>
           </div>
         </footer>
+      </div>
       </div>
     </div>
   )

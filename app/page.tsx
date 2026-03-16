@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import { TrendingUp, TrendingDown, Cloud, Droplets, ThermometerSun, Calculator, Download, Github, Sparkles, BarChart3, Clock, Target, Globe, Sun, Moon } from 'lucide-react'
 import { translations, cities } from './i18n'
 import Link from 'next/link'
+import Sidebar from '@/components/Sidebar'
 
 type Lang = 'en' | 'ja' | 'fr' | 'es' | 'zh-CN' | 'zh-TW'
 
@@ -233,7 +234,8 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="flex flex-col lg:flex-row gap-8">
+          <div className="flex-1 space-y-6">
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-100 dark:border-gray-700 transition-colors">
             <h2 className="text-2xl font-bold mb-4 flex items-center gap-2 text-gray-800 dark:text-gray-100">
               <Cloud className="w-6 h-6 text-blue-600 dark:text-blue-400" />
@@ -330,21 +332,10 @@ export default function Home() {
                 </div>
               </div>
             )}
-            <div className="mt-6 p-4 bg-white/60 backdrop-blur-sm rounded-lg border border-gray-200 shadow-sm">
-              <div className="text-xs text-gray-500 mb-2 text-center">Advertisement</div>
-              <div className="flex justify-center">
-                <div id="frame" style={{width: '100%', margin: 'auto', position: 'relative', zIndex: 99998}}>
-                  <iframe data-aa='2430615' src='//acceptable.a-ads.com/2430615/?size=Adaptive' style={{border: 0, padding: 0, width: '70%', height: 'auto', overflow: 'hidden', display: 'block', margin: 'auto'}} />
-                </div>
-              </div>
-            </div>
-            <div className="mt-4 p-3 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-lg border border-yellow-200">
-              <div className="text-xs text-gray-600 text-center mb-2">💡 Support this free tool</div>
-              <a href="https://www.bsmkweb.cc/activity/referral-entry/CPA?ref=CPA_00M8R3UI0N" target="_blank" rel="noopener noreferrer" className="block transition-transform hover:scale-105">
-                <img src="/binance-logo.svg" alt="Binance" className="mx-auto h-10 w-auto" />
-              </a>
-            </div>
           </div>
+          </div>
+          
+          <Sidebar />
         </div>
 
         {history.length > 0 && (
