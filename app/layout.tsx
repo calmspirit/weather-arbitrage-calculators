@@ -2,8 +2,8 @@ import './globals.css'
 import Script from 'next/script'
 
 export const metadata = {
-  title: 'OddsKit | Professional Betting Calculators & Odds Converter',
-  description: 'Free professional betting tools: Odds Converter, Kelly Calculator, EV Calculator. Convert odds formats, calculate optimal bet sizing, and analyze expected value for sports betting and prediction markets.',
+  title: 'Free Betting Calculators - Odds, EV & Kelly Tools | OddsKit',
+  description: 'Free betting calculators for sports bettors. Convert odds, calculate expected value, optimize bet sizing with Kelly Criterion. No signup required. Start winning smarter today.',
   keywords: 'odds converter, Kelly calculator, EV calculator, betting calculator, arbitrage calculator, betting odds, prediction market, ROI calculator, sports betting tools, implied probability',
   openGraph: {
     title: 'OddsKit - Professional Betting Calculators & Odds Converter',
